@@ -12,22 +12,29 @@
 Step: 1 Create the Flask app locally
 ___
 Create project folder on your local machine
+
       cmd: mkdir github-actions-cicd
+      
       cmd: cd github-actions-cicd
       
 Create the app file app.py
+
       github-actions-cicd/app.py
       
 Create requirements.txt
+
       github-actions-cicd/requirements.txt
       
 Create a simple test file
+
       github-actions-cicd/test_app.py
 
 Create Dockerfile
+
       github-actions-cicd/Dockerfile
       
 Create .gitignore
+
       github-actions-cicd/.gitignore
       
 Step: 2

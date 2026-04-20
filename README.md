@@ -76,7 +76,15 @@ GitHub Actions needs AWS credentials to push images to ECR and deploy to EC2
             → COPY both values immediately:
             
 
-Step: 5
+Step: 5 Add secrets to GitHub repository
+
+            GitHub repo → Settings → Secrets and variables → Actions
+
+            → New repository secret — add all 4:
+
+            AWS Access and Secret Key
+
+            AWS Region and ECR_REPOSITORY
 
 Step: 6
 

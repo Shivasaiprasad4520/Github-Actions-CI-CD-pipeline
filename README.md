@@ -37,9 +37,24 @@ Create .gitignore
 
       github-actions-cicd/.gitignore
       
-Step: 2
+Step: 2 Create GitHub repo and push code
 
-Step: 3
+
+Step: 3 Create AWS ECR repository
+
+            AWS Console → Elastic Container Registry → Create repository
+            
+            Visibility:      Private
+            
+            Repository name: github-actions-cicd
+            
+            Click: Create repository
+
+            Copy the repository URI — looks like:
+            
+            123456789.dkr.ecr.ap-south-1.amazonaws.com/github-actions-cicd
+
+            
 
 Step: 4
 

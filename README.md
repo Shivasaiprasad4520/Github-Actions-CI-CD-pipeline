@@ -56,7 +56,25 @@ Step: 3 Create AWS ECR repository
 
             
 
-Step: 4
+Step: 4 Create IAM user for GitHub Actions
+
+GitHub Actions needs AWS credentials to push images to ECR and deploy to EC2
+
+            AWS Console → IAM → Users → Create user
+              Username: github-actions-user
+
+            → Attach policies directly → attach these two:
+
+            1. AmazonEC2ContainerRegistryFullAccess
+
+            2. AmazonEC2FullAccess
+
+            → Create user → Security credentials tab
+
+            → Create access key → Application running outside AWS
+
+            → COPY both values immediately:
+            
 
 Step: 5
 

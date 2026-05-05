@@ -1,135 +1,117 @@
 # test_app.py
-
 import pytest
 import os
 import tempfile
 import sqlite3
-from app import app
+from unittest.mock import patch, MagicMock
+from app import app, init_db
 
 
-# -------------------------
-# TEST DATABASE SETUP
-# -------------------------
+# ── FIXTURE: spins up a fresh in-memory DB + mocks templates ──
 @pytest.fixture
 def client():
-    db_fd, db_path = tempfile.mkstemp()
+    db_fd, db_path = tempfile.mkstemp(suffix='.db')
 
-    app.config['TESTING'] = True
-    app.config['DATABASE'] = 'test.db'
+    app.config['TESTING']       = True
+    app.config['DATABASE']      = db_path
     app.config['UPLOAD_FOLDER'] = 'test_uploads'
 
-    os.makedirs("test_uploads", exist_ok=True)
+    os.makedirs('test_uploads', exist_ok=True)
 
-    with app.test_client() as client:
-
-        # Create tables for testing
-        conn = sqlite3.connect(db_path)
-        cur = conn.cursor()
-
-        cur.execute("""
-        CREATE TABLE students(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT,
-            email TEXT,
-            password TEXT,
-            course TEXT,
-            roll_no TEXT,
-            branch TEXT,
-            year TEXT
-        )
-        """)
-
-        cur.execute("""
-        CREATE TABLE announcements(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            message TEXT
-        )
-        """)
-
-        cur.execute("""
-        CREATE TABLE notes(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT,
-            content TEXT,
-            file TEXT
-        )
-        """)
-
-        conn.commit()
-        conn.close()
-
-        yield client
+    # Mock render_template so tests don't need HTML files
+    # This is correct CI practice — unit tests test logic, not templates
+    with patch('app.render_template', return_value='<html>OK</html>'):
+        with app.test_client() as client:
+            init_db()
+            yield client
 
     os.close(db_fd)
     os.unlink(db_path)
+    import shutil
+    if os.path.exists('test_uploads'):
+        shutil.rmtree('test_uploads')
 
 
-# -------------------------
-# HOME PAGE TEST
-# -------------------------
+# ── helper: register a student ──
+def register_student(client, name="Loki", email="loki@test.com",
+                     password="123", roll_no="101"):
+    return client.post('/register', data={
+        'name':     name,
+        'email':    email,
+        'password': password,
+        'course':   'DevOps',
+        'roll_no':  roll_no,
+        'branch':   'CSE',
+        'year':     '4'
+    }, follow_redirects=True)
+
+
+# ── TESTS ──
+
 def test_home(client):
     response = client.get('/')
     assert response.status_code == 200
 
 
-# -------------------------
-# REGISTER TEST
-# -------------------------
 def test_register(client):
-    response = client.post('/register', data={
-        'name': 'Loki',
-        'email': 'loki@test.com',
-        'password': '123',
-        'course': 'DevOps',
-        'roll_no': '101',
-        'branch': 'CSE',
-        'year': '4'
-    }, follow_redirects=True)
-
+    response = register_student(client)
     assert response.status_code == 200
 
 
-# -------------------------
-# LOGIN TEST
-# -------------------------
-def test_login(client):
-    client.post('/register', data={
-        'name': 'Loki',
-        'email': 'loki@test.com',
-        'password': '123',
-        'course': 'DevOps',
-        'roll_no': '101',
-        'branch': 'CSE',
-        'year': '4'
-    })
-
+def test_login_valid(client):
+    register_student(client)
     response = client.post('/login', data={
-        'email': 'loki@test.com',
+        'email':    'loki@test.com',
         'password': '123'
     }, follow_redirects=True)
-
     assert response.status_code == 200
 
 
-# -------------------------
-# ADMIN LOGIN TEST
-# -------------------------
-def test_admin_login(client):
+def test_login_invalid(client):
+    response = client.post('/login', data={
+        'email':    'wrong@test.com',
+        'password': 'wrongpass'
+    }, follow_redirects=True)
+    assert response.status_code == 401
+
+
+def test_admin_login_valid(client):
     response = client.post('/admin-login', data={
         'username': 'admin',
         'password': '123'
     }, follow_redirects=True)
-
     assert response.status_code == 200
 
 
-# -------------------------
-# FACULTY LOGIN TEST
-# -------------------------
-def test_faculty_login(client):
+def test_admin_login_invalid(client):
+    response = client.post('/admin-login', data={
+        'username': 'admin',
+        'password': 'wrongpass'
+    }, follow_redirects=True)
+    assert response.status_code == 401
+
+
+def test_faculty_login_valid(client):
     response = client.post('/faculty-login', data={
         'username': 'faculty',
         'password': '123'
     }, follow_redirects=True)
+    assert response.status_code == 200
 
+
+def test_faculty_login_invalid(client):
+    response = client.post('/faculty-login', data={
+        'username': 'faculty',
+        'password': 'wrongpass'
+    }, follow_redirects=True)
+    assert response.status_code == 401
+
+
+def test_student_dashboard(client):
+    response = client.get('/student-dashboard')
+    assert response.status_code == 200
+
+
+def test_admin_dashboard(client):
+    response = client.get('/admin-dashboard')
     assert response.status_code == 200

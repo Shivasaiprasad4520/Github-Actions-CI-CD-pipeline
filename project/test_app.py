@@ -15,7 +15,7 @@ def client():
     db_fd, db_path = tempfile.mkstemp()
 
     app.config['TESTING'] = True
-    app.config['DATABASE'] = db_path
+    app.config['DATABASE'] = 'test.db'
     app.config['UPLOAD_FOLDER'] = 'test_uploads'
 
     os.makedirs("test_uploads", exist_ok=True)

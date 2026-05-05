@@ -28,7 +28,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run pytest
-        run: pytest test_app.py -v
+        run: pytest project/test_app.py -v
     
   build-and-push:
     name: Build Docker image and push to ECR

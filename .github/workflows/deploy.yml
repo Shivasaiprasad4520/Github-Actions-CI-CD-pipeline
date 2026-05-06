@@ -28,7 +28,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run pytest
-        run: pytest project/test_app.py -v
+        run: pytest app/test_app.py -v
     
   build-and-push:
     name: Build Docker image and push to ECR
@@ -91,7 +91,7 @@ jobs:
             ECR_REPOSITORY=${{ secrets.ECR_REPOSITORY }}
 
             aws ecr get-login-password --region ap-south-1 | \
-              docker login --username AWS --password-stdin $ECR_REGISTRY
+              docker login --username AWS --password-stdin $ECR_REGIstrategy:
                         
             docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 

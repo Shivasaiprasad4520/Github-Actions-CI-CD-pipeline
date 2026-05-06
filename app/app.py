@@ -314,4 +314,4 @@ def attendance_summary():
 
 if __name__ == "__main__":
     init_db()          # ← init DB only when running directly
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
